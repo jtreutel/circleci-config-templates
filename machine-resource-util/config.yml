@@ -1,0 +1,43 @@
+version: 2.1
+
+executors:
+  machine-executor:
+    machine:
+      image: ubuntu-2004:202010-01
+
+jobs:
+  stresstest:
+    executor: machine-executor
+    steps:
+      - run: |
+          dd if=/dev/random iflag=fullblock of=./randomFile1 bs=5M count=1
+          sleep 5
+          dd if=/dev/random iflag=fullblock of=./randomFile2 bs=10M count=1
+          sleep 5
+          dd if=/dev/random iflag=fullblock of=./randomFile3 bs=15M count=1
+          sudo snap install stress-ng
+          stress-ng --vm-bytes $(awk '/MemAvailable/{printf "%d\n", $2 * 0.91;}' < /proc/meminfo)k --vm-keep -m 1 -t 30
+
+workflows:
+  build-flow:
+    jobs:
+      - stresstest:
+          pre-steps:
+            - log-resource-util
+          post-steps:
+            - store_artifacts:
+                path: /tmp/cpu_mem_util.log
+
+commands:
+  log-resource-util:
+    description: "Log CPU and memory utilization at 1 second intervals"
+    steps:
+      - run:
+          background: true
+          command: |
+            sleep 3
+            echo "Timestamp             | CPU    | Mem" | tee /tmp/cpu_mem_util.log
+            while true; do
+              echo $(date +"%D %T %Z") \| $(top -bn1 | sed -n '/Cpu/p' | awk '{printf "'%05.2f'", 100.0 - $8}')%  \| $(free | grep Mem | awk '{printf "'%05.2f'", $3/$2 * 100.0}')% | tee -a /tmp/cpu_mem_util.log
+              sleep 1
+            done
