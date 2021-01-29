@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   stresstest:
     docker:
-      - image: cimg/base
+      - image: cimg/base:2021.01
     steps:
       - run: |
           dd if=/dev/random iflag=fullblock of=./randomFile1 bs=5M count=1
