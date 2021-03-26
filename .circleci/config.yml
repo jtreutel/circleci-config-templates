@@ -12,7 +12,8 @@ jobs:
     resource_class: jtreutel/runner-test-k8s
     steps:
       - run: |
-          fdisk -l
+          sudo amazon-linux-extras install docker
+          docker run hello-world
 workflows:
   version: 2
   testing:
