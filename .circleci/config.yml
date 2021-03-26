@@ -12,10 +12,6 @@ jobs:
     resource_class: jtreutel/runner-test-k8s
     steps:
       - run: |
-          uname -a
-          lsb_release -a
-          ls /proc
-          cat /etc/os-release
           fdisk -l
 workflows:
   version: 2
