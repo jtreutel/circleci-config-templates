@@ -12,8 +12,7 @@ jobs:
     resource_class: jtreutel/runner-test-k8s
     steps:
       - run: |
-          yum install docker
-          docker run hello-world
+          fdisk -l
 workflows:
   version: 2
   testing:
