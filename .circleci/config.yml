@@ -3,14 +3,23 @@ version: 2.1
 
 jobs:
   runner:
-    docker:
-      - image: cimg/base:2021.03
+    machine: true
     resource_class: jtreutel/runner-test-k8s
     steps:
       - run: echo "Hi, I'm on a Runner!"
-
+  runner-docker-in-docker:
+    machine: true
+    resource_class: jtreutel/runner-test-k8s
+    steps:
+      - run: |
+          uname -a
+          lsb_release -a
+          ls /proc
+          cat /etc/os-release
+          fdisk -l
 workflows:
   version: 2
   testing:
     jobs:
       - runner
+      - runner-docker-in-docker
