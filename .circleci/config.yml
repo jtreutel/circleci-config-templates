@@ -3,7 +3,8 @@ version: 2.1
 
 jobs:
   runner:
-    #machine: true
+    docker:
+      - image: cimg/base:2021.03
     resource_class: jtreutel/runner-test-k8s
     steps:
       - run: echo "Hi, I'm on a Runner!"
