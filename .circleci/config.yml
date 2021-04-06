@@ -27,7 +27,7 @@ workflows:
           requires:
             - test
           filters:
-            branches:             #matches branches starting with "qa"; see here for more info: https://circleci.com/docs/2.0/workflows/#using-regular-expressions-to-filter-tags-and-branches
-                only: /qa.*/        
-            #tags:                #you could also use tags instead
-            #  only: /qa.*/ 
+            #branches:             #matches branches starting with "qa"; see here for more info: https://circleci.com/docs/2.0/workflows/#using-regular-expressions-to-filter-tags-and-branches
+            #    only: /qa.*/        
+            tags:                #you could also use tags instead
+              only: /qa.*/ 
