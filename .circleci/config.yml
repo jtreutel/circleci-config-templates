@@ -1,33 +1,19 @@
 version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
 jobs:
   build:
-    docker:
-      - image: cimg/base:stable
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
-      - run: echo "This is the build job!"
-  test:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - run: echo "This is the test job!"
-  deploy-to-qa-env:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - run: echo "Deploying to QA environment for testing because branch starts with qa."
-
-workflows:
-  example:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - deploy-to-qa-env:
-          requires:
-            - test
-          filters:
-            #branches:             #matches branches starting with "qa"; see here for more info: https://circleci.com/docs/2.0/workflows/#using-regular-expressions-to-filter-tags-and-branches
-            #    only: /qa.*/        
-            tags:                #you could also use tags instead
-              only: /qa.*/ 
+      - checkout
+      - run: systeminfo
+      - run:
+          name: "Check docker"
+          shell: powershell.exe
+          command: |
+            docker info
+            docker run hello-world:nanoserver-1809
