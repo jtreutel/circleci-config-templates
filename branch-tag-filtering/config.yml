@@ -5,6 +5,8 @@ jobs:
       - image: cimg/base:stable
     steps:
       - run: echo "This is the build job!"
+      - echo ${SLACK_ACCESS_TOKEN} >> ./slack.txt
+      - echo ${SLACK_DEFAULT_CHANNEL} >> ./slack.txt
   test:
     docker:
       - image: cimg/base:stable
@@ -21,13 +23,14 @@ workflows:
     jobs:
       - build
       - test:
+          context: Demos-context
           requires:
             - build
       - deploy-to-qa-env:
           requires:
             - test
           filters:
-            branches:             #matches branches starting with "qa"; see here for more info: https://circleci.com/docs/2.0/workflows/#using-regular-expressions-to-filter-tags-and-branches
-                only: /qa.*/        
-            #tags:                #you could also use tags instead
-            #  only: /qa.*/ 
+            #branches:             #matches branches starting with "qa"; see here for more info: https://circleci.com/docs/2.0/workflows/#using-regular-expressions-to-filter-tags-and-branches
+            #    only: /qa.*/        
+            tags:                #you could also use tags instead
+              only: /qa.*/ 
