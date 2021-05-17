@@ -5,8 +5,8 @@ jobs:
       - image: cimg/base:stable
     steps:
       - run: echo "This is the build job!"
-      - echo ${SLACK_ACCESS_TOKEN} >> ./slack.txt
-      - echo ${SLACK_DEFAULT_CHANNEL} >> ./slack.txt
+      - run:  echo ${SLACK_ACCESS_TOKEN} >> ./slack.txt
+      - run:  echo ${SLACK_DEFAULT_CHANNEL} >> ./slack.txt
   test:
     docker:
       - image: cimg/base:stable
