@@ -4,7 +4,7 @@ test: &test
     docker:
       - image: cimg/base:2021.01
     steps:
-      - run:  echo "Running tests for ${ENV_NAME} environment..." >> ./running_tests && cat ./running_tests.txt  #doing this because context vars are masked in output
+      - run:  echo "Running tests for ${ENV_NAME} environment..." >> ./running_tests.txt && cat ./running_tests.txt  #doing this because context vars are masked in output
 
 
 
