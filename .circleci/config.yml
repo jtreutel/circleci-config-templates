@@ -1,58 +1,37 @@
 version: 2.1
 
-test: &test
-    docker:
-      - image: cimg/base:2021.01
-    steps:
-      - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
-
-
-
 jobs:
   build:
     docker:
       - image: cimg/base:2021.01
     steps:
-      - run:  echo Building the application...
-  test-demo:
-    <<: *test
-  test-dev:
-    <<: *test
-  test-staging:
-    <<: *test
-  test-prod:
-    <<: *test
+      - run:  echo foobar
+  test:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run:  echo foobar
+  deploy:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run:  echo foobar
 
 workflows:
   version: 2
   main:
     jobs:
       - build
-      - test-demo:
-          context: test-demo-vars
+      - test:
           requires:
             - build
-          filters:
-            branches:
-              only: /demo\/.*/
-      - test-dev:
-          context: test-dev-vars
+      - hold_for_deploy:
+          type: approval
           requires:
             - build
-          filters:
-            branches:
-              only: /dev\/.*/
-      - test-staging:
-          context: test-staging-vars
+      - deploy:
           requires:
-            - build
-          filters:
-            branches:
-              only: /staging\/.*/
-      - test-prod:
-          context: test-prod-vars
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+           - hold_for_deploy
+
+
+
