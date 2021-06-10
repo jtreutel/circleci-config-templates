@@ -1,18 +1,61 @@
 version: 2.1
 
-jobs:
-  secrets:
+test: &test
     docker:
       - image: cimg/base:2021.01
     steps:
-      - run:  echo ${SLACK_ACCESS_TOKEN} >> ./slack.txt
-      - run:  echo ${SLACK_DEFAULT_CHANNEL} >> ./slack.txt
+      - run:  echo Running tests for ${ENV_NAME} environment...
+
+
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run:  echo Building the application...
+  test-demo:
+    <<: *test
+  test-dev:
+    <<: *test
+  test-staging:
+    <<: *test
+  test-prod:
+    <<: *test
 
 workflows:
-  build-flow:
+  version: 2
+  main:
     jobs:
-      - secrets:
-          context: Demos-context
+      - build
+      - test-demo:
+          context: test-demo-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: /demo\/.*/
+      - test-dev:
+          context: test-dev-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: /dev\/.*/
+      - test-staging:
+          context: test-staging-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: /staging\/.*/
+      - test-prod:
+          context: test-prod-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
 
 
 
