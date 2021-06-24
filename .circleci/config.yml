@@ -27,14 +27,14 @@ workflows:
       - build
       - test:
           context: test-demo-vars
-          name: Demo tests
+          name: tests (demo)
           requires:
             - build
           filters:
             branches:
               only: /demo\/.*/
       - test:
-          name: Dev tests
+          name: tests (dev)
           context: test-dev-vars
           requires:
             - build
@@ -43,7 +43,7 @@ workflows:
               only: /dev\/.*/
       - test:
           context: test-staging-vars
-          name: Staging tests
+          name: tests (staging)
           requires:
             - build
           filters:
@@ -51,7 +51,7 @@ workflows:
               only: /staging\/.*/
       - test:
           context: test-prod-vars
-          name: Prod tests
+          name: tests (prod)
           requires:
             - build
           filters:
