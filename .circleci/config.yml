@@ -9,4 +9,4 @@ jobs:
     resource_class: jtreutel/runner-test
     steps:
       - run: echo "Hi I'm on Runners!" && sleep 60
-    parallelism: 2
+    parallelism: 4
