@@ -1,61 +1,12 @@
 version: 2.1
-
-test: &test
-    docker:
-      - image: cimg/base:2021.01
-    steps:
-      - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
-
-
-
-jobs:
-  build:
-    docker:
-      - image: cimg/base:2021.01
-    steps:
-      - run:  echo Building the application...
-  test:
-    docker:
-      - image: cimg/base:2021.01
-    steps:
-      - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
-
 workflows:
-  version: 2
-  main:
+  testing:
     jobs:
-      - build
-      - test:
-          context: test-demo-vars
-          name: tests (demo)
-          requires:
-            - build
-          filters:
-            branches:
-              only: /demo\/.*/
-      - test:
-          name: tests (dev)
-          context: test-dev-vars
-          requires:
-            - build
-          filters:
-            branches:
-              only: /dev\/.*/
-      - test:
-          context: test-staging-vars
-          name: tests (staging)
-          requires:
-            - build
-          filters:
-            branches:
-              only: /staging\/.*/
-      - test:
-          context: test-prod-vars
-          name: tests (prod)
-          requires:
-            - build
-          filters:
-            branches:
-              only: 
-                - master
-                - main
+      - runner
+jobs:
+  runner:
+    machine: true
+    resource_class: jtreutel/runner-test
+    steps:
+      - run: echo "Hi I'm on Runners!" && sleep 60
+    parallelism: 2
