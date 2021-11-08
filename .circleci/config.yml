@@ -1,12 +1,38 @@
 version: 2.1
+
+commands:
+  notify_gerrit:
+    steps:
+      - run: 
+          command: |
+            echo "Success! Send "success" message to Gerrit."
+            echo "API call goes here."
+          when: on_success
+      - run: 
+          command: |
+            echo "Failure. Send "failure" message to Gerrit."
+            echo "API call goes here."
+          when: on_fail
+
+jobs:
+  success:
+    docker:
+      - image: cimg/base
+    steps:
+      - run: 
+          command: echo "Performing some task..."
+      - notify_gerrit
+  failure:
+    docker:
+      - image: cimg/base
+    steps:
+      - run: 
+          command: echo "Performing some task..."
+      - notify_gerrit
+
+
 workflows:
   testing:
     jobs:
-      - runner
-jobs:
-  runner:
-    machine: true
-    resource_class: jtreutel/runner-test
-    steps:
-      - run: echo "Hi I'm on Runners!" && sleep 60
-    parallelism: 10
+      - success
+      - failure
