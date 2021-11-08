@@ -27,7 +27,7 @@ jobs:
       - image: cimg/base:2021.10
     steps:
       - run: 
-          command: echo "Performing some task..."
+          command: echo "Performing some task..." && false
       - notify_gerrit
 
 
