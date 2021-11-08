@@ -17,14 +17,14 @@ commands:
 jobs:
   success:
     docker:
-      - image: cimg/base
+      - image: cimg/base:2021.10
     steps:
       - run: 
           command: echo "Performing some task..."
       - notify_gerrit
   failure:
     docker:
-      - image: cimg/base
+      - image: cimg/base:2021.10
     steps:
       - run: 
           command: echo "Performing some task..."
