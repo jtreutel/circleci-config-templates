@@ -1,4 +1,3 @@
-version: 2.1
 
 jobs:
   build:
@@ -14,17 +13,19 @@ jobs:
 
 workflows:
   version: 2
-  dev:
+  main:
     jobs:
       - build
       - test:
           context: test-demo-vars
+          name: tests (demo)
           requires:
             - build
           filters:
             branches:
               only: /demo\/.*/
       - test:
+          name: tests (dev)
           context: test-dev-vars
           requires:
             - build
@@ -33,6 +34,7 @@ workflows:
               only: /dev\/.*/
       - test:
           context: test-staging-vars
+          name: tests (staging)
           requires:
             - build
           filters:
@@ -40,6 +42,7 @@ workflows:
               only: /staging\/.*/
       - test:
           context: test-prod-vars
+          name: tests (prod)
           requires:
             - build
           filters:
