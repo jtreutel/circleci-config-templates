@@ -1,49 +1,16 @@
 version: 2.1
 
 jobs:
-  build:
+  validate:
     docker:
       - image: cimg/base:2021.01
     steps:
-      - run:  echo Building the application...
-  test:
-    docker:
-      - image: cimg/base:2021.01
-    steps:
-      - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
+      - run:  for FILE in `find $(pwd) -type f -name '*config.yml'`; do echo; echo "Validating $FILE"; circleci config validate $FILE; done
+      # need to update to fail on nonzero exit code inside for loop
+
 
 workflows:
   version: 2
-  dev:
+  main:
     jobs:
-      - build
-      - test:
-          context: test-demo-vars
-          requires:
-            - build
-          filters:
-            branches:
-              only: /demo\/.*/
-      - test:
-          context: test-dev-vars
-          requires:
-            - build
-          filters:
-            branches:
-              only: /dev\/.*/
-      - test:
-          context: test-staging-vars
-          requires:
-            - build
-          filters:
-            branches:
-              only: /staging\/.*/
-      - test:
-          context: test-prod-vars
-          requires:
-            - build
-          filters:
-            branches:
-              only: 
-                - master
-                - main
+      - validate
