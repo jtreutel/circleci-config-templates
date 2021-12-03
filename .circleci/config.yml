@@ -31,8 +31,12 @@ workflows:
       equal: [ "", << pipeline.parameters.target-job >> ]
     jobs:
       - job-1
-      - job-2
-      - job-3
+      - job-2:
+          requires:
+            - job-1
+      - job-3:
+          requires:
+            - job-2
   only-job-1:
     when:
       equal: [ "job-1", << pipeline.parameters.target-job >> ]
