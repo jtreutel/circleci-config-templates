@@ -13,7 +13,6 @@ jobs:
       - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
 
 workflows:
-  version: 2
   main:
     jobs:
       - build
