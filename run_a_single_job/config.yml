@@ -1,0 +1,54 @@
+version: 2.1
+
+parameters:
+  target-job:
+    type: string
+    default: ""
+
+jobs:
+  job-1:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: echo "Running the first job!"
+  job-2:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: echo "Running the second job!"
+  job-3:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: echo "Running the third job!"
+
+workflows:
+  main:
+    when:
+      equal: [ "", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-1
+      - job-2:
+          requires:
+            - job-1
+      - job-3:
+          requires:
+            - job-2
+  only-job-1:
+    when:
+      equal: [ "job-1", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-1
+  only-job-2:
+    when:
+      equal: [ "job-2", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-2
+  only-job-3:
+    when:
+      equal: [ "job-3", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-3
