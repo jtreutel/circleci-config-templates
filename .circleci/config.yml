@@ -1,38 +1,50 @@
 version: 2.1
 
-commands:
-  notify_gerrit:
-    steps:
-      - run: 
-          command: |
-            echo "Success! Send "success" message to Gerrit."
-            echo "API call goes here."
-          when: on_success
-      - run: 
-          command: |
-            echo "Failure. Send "failure" message to Gerrit."
-            echo "API call goes here."
-          when: on_fail
+parameters:
+  target-job:
+    type: string
+    default: ""
 
 jobs:
-  success:
+  job-1:
     docker:
       - image: cimg/base:2021.10
     steps:
       - run: 
-          command: echo "Performing some task..."
-      - notify_gerrit
-  failure:
+          command: echo "Running the first job!"
+  job-2:
     docker:
       - image: cimg/base:2021.10
     steps:
       - run: 
-          command: echo "Performing some task..." && false
-      - notify_gerrit
-
+          command: echo "Running the second job!"
+  job-3:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: echo "Running the third job!"
 
 workflows:
-  testing:
+  main:
+    when:
+      equal: [ "", << pipeline.parameters.target-job >> ]
     jobs:
-      - success
-      - failure
+      - job-1
+      - job-2
+      - job-3
+  only-job-1:
+    when:
+      equal: [ "job-1", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-1
+  only-job-2:
+    when:
+      equal: [ "job-2", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-2
+  only-job-3:
+    when:
+      equal: [ "job-3", << pipeline.parameters.target-job >> ]
+    jobs:
+      - job-3
