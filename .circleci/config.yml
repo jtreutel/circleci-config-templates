@@ -1,13 +1,5 @@
 version: 2.1
 
-test: &test
-    docker:
-      - image: cimg/base:2021.01
-    steps:
-      - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
-
-
-
 jobs:
   build:
     docker:
