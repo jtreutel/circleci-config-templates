@@ -5,6 +5,7 @@ jobs:
     docker:
       - image: cimg/base:2021.01
     steps:
+      - checkout
       - run:  for FILE in `find $(pwd) -type f -name '*config.yml'`; do echo; echo "Validating $FILE"; circleci config validate $FILE; done
       # need to update to fail on nonzero exit code inside for loop
 
