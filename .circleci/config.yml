@@ -9,6 +9,6 @@ jobs:
     resource_class: jtreutel/runner-test
     steps:
       - run: 
-          command: echo "Hi I'm on Runners!" && sleep 1800
+          command: echo "Hi I'm on Runners!" && sleep 300
           no_output_timeout: 60m
-    parallelism: 10
+    parallelism: 2
