@@ -1,5 +1,5 @@
 orbs: 
-  jinja: jtreutel/jinja@0.0.1 #this version only exists on my Server instance
+  jinja: jtreutel/jinja@0.0.3 #this version only exists on my Server instance
 
 version: 2.1
 
