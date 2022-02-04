@@ -1,14 +1,21 @@
+orbs: 
+  jinja: jtreutel/jinja@0.0.1 #this version only exists on my Server instance
+
 version: 2.1
+
+jobs:
+  render-file:
+    executor: jinja/default
+    environment:
+      - FOOBAR: baz
+    steps:
+      - checkout
+      - jinja/render:
+          outputdir: jinja-orb-test/rendered/
+          path: jinja-orb-test/example.txt.j2
+      - run: cat jinja-orb-test/rendered/example.txt
+
 workflows:
   testing:
     jobs:
-      - runner
-jobs:
-  runner:
-    machine: true
-    resource_class: jtreutel/runner-test
-    steps:
-      - run: 
-          command: echo "Hi I'm on Runners!" && sleep 300
-          no_output_timeout: 60m
-    parallelism: 2
+      - render-file
