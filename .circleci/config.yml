@@ -1,19 +1,65 @@
-#version: 2.1
+version: 2.1
 
 orbs:
-  win: circleci/windows@2.2.0
+  win: circleci/windows@2.4.1
 
-jobs:
-  build:
-    executor:
-      name: win/default
-      shell: powershell.exe
+commands:
+  get-info:
     steps:
       - checkout
       - run: systeminfo
       - run:
-          name: "Check docker"
+          name: "Check installed software"
           shell: powershell.exe
-          command: |
-            docker info
-            docker run hello-world:nanoserver-1809
+          command: Get-WmiObject -Class Win32_Product
+      - run:
+          name: "Check disk info"
+          shell: powershell.exe
+          command: Get-Disk
+
+jobs:
+  win-medium:
+    executor:
+      name: win/default
+      size: medium
+      shell: powershell.exe
+    steps:
+      - get-info
+  win-large:
+    executor:
+      name: win/default
+      size: large
+      shell: powershell.exe
+    steps:
+      - get-info
+  win-xlarge:
+    executor:
+      name: win/default
+      size: xlarge
+      shell: powershell.exe
+    steps:
+      - get-info
+  win-2xlarge:
+    executor:
+      name: win/default
+      size: 2xlarge
+      shell: powershell.exe
+    steps:
+      - get-info
+  win-gpu:
+    executor:
+      name: win/gpu-nvidia
+      size: medium
+      shell: powershell.exe
+    steps:
+      - get-info
+
+workflows:
+  version: 2
+  main:
+   jobs:
+     - win-medium
+     - win-large
+     - win-xlarge
+     - win-2xlarge
+     - win-gpu
