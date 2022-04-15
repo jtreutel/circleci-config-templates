@@ -16,7 +16,7 @@ commands:
       - run:
           command: | 
             aws sts assume-role-with-web-identity \
-            --role-arn ${AWS_OIDC_ROLE_ARN} \
+            --role-arn <<parameters.aws-oidc-role-arn>> \
             --role-session-name ${CIRCLE_USERNAME}-${CIRCLE_SHA1:0:5} \
             --web-identity-token ${CIRCLE_OIDC_TOKEN} > /tmp/aws-creds.txt
 
