@@ -11,12 +11,22 @@ jobs:
       - aws-cli/setup
       - run:
           command: | 
-            echo $CIRCLE_OIDC_TOKEN > ./token.txt
+            export AWS_OIDC_ROLE_ARN="arn:aws:iam::660990364978:role/jennings-oidc-demo"
+
+            aws sts assume-role-with-web-identity \
+            --role-arn ${AWS_OIDC_ROLE_ARN} \
+            --role-session-name ${CIRCLE_USERNAME}-${CIRCLE_SHA1:0:5} \
+            --web-identity-token ${CIRCLE_OIDC_TOKEN} > /tmp/aws-creds.txt
+
+            export AWS_ACCESS_KEY_ID="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.AccessKeyId")"
+            export AWS_SECRET_ACCESS_KEY="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SecretAccessKey")"
+            export AWS_SESSION_TOKEN="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SessionToken")"
+            
             aws sts get-caller-identity
 
 workflows:
   main:
     jobs:
       - oidc-test:
-          context: node-demo
-          #context: empty-context
+          #context: node-demo
+          context: empty-context
