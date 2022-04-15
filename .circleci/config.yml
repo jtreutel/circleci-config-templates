@@ -1,11 +1,14 @@
 version: 2.1
 
+orbs: 
+  aws-cli: circleci/aws-cli@3.0.0
+
 jobs:
   oidc-test:
     docker:
       - image: cimg/base:2021.01
     steps:
-      - checkout
+      - aws-cli/setup
       - run:
           command: | 
             echo $CIRCLE_OIDC_TOKEN > ./token.txt
@@ -15,4 +18,5 @@ workflows:
   main:
     jobs:
       - oidc-test:
-          context: empty-context
+          context: node-demo
+          #context: empty-context
