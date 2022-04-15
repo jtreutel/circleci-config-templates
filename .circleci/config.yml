@@ -9,7 +9,7 @@ jobs:
       - image: cimg/base:2021.01
     steps:
       - aws-cli/setup:
-          aws_region: ap-northeast-2 #should use AWS_DEFAULT_REGION by default
+          aws-region: ap-northeast-2 #should use AWS_DEFAULT_REGION by default
       - run:
           command: | 
             export AWS_OIDC_ROLE_ARN="arn:aws:iam::660990364978:role/jennings-oidc-demo"
@@ -21,7 +21,7 @@ jobs:
 
             export AWS_ACCESS_KEY_ID="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.AccessKeyId")"
             export AWS_SECRET_ACCESS_KEY="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SecretAccessKey")"
-            export AWS_SESSION_TOKEN="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SessionToken")"
+            export AWS_SESSION_TOKEN="$(cat /tmp/aws-creds.txt | jqzs -r ".Credentials.SessionToken")"
             
             aws sts get-caller-identity
 
