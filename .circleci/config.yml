@@ -1,19 +1,17 @@
 version: 2.1
 
 jobs:
-  validate:
+  oidc-test:
     docker:
       - image: cimg/base:2021.01
     steps:
       - checkout
       - run:
-          command: |
-            curl https://api.github.com/repos/CircleCI-Public/circleci-cli/releases/latest | jq -r '.assets[] | select(.name | contains("linux_amd64")) | .browser_download_url' | wget -qi -
-            find $(pwd) -type f -name 'circleci-cli_*' -printf "%f\n" | xargs tar xzvf
-            find $(pwd) -type f -name 'circleci' | xargs -I % sudo mv % /usr/local/bin/ccicli
-      - run:  for FILE in `find $(pwd) -type f -name '*config.yml'`; do echo; echo "Validating $FILE"; ccicli config validate $FILE; done
+          command: | 
+            echo $CIRCLE_OIDC_TOKEN > ./token.txt
+            aws sts get-caller-identity
 
 workflows:
   main:
     jobs:
-      - validate
+      - oidc-test
