@@ -12,6 +12,9 @@ commands:
         default: us-east-1  #this should be okay since this will only be used for the AWS STS command that retrieves credentials
       aws-oidc-role-arn:    #this should be the IAM role assigned to your AWS OIDC provider and audience
         type: string
+      write-to-credentials:
+        type: boolean
+        default: false
     steps:
       - run:
           command: | 
@@ -24,9 +27,19 @@ commands:
             echo export AWS_SECRET_ACCESS_KEY="${STS_RESPONSE[1]}" >> $BASH_ENV
             echo export AWS_SESSION_TOKEN="${STS_RESPONSE[2]}" >> $BASH_ENV
 
+            if [ <<parameters.write-to-credentials>> ]; then \
+              cat \<< EOF > ~/.aws/credentials
+              [default]
+              aws_access_key_id=${STS_RESPONSE[0]}
+              aws_secret_access_key=${STS_RESPONSE[1]}
+              aws_session_token=${STS_RESPONSE[2]}
+              EOF \
+            fi
+
             source $BASH_ENV
             aws sts get-caller-identity
             rm /tmp/aws-creds.txt
+
 
 jobs:
   oidc-test:
@@ -56,11 +69,26 @@ jobs:
       - aws-cli/install
       - aws-oidc-setup:
           aws-oidc-role-arn: arn:aws:iam::660990364978:role/jennings-oidc-demo
+          write-to-credentials: true
       - run:
           command: aws sts get-caller-identity
+      - persist_to_workspace:
+          root: .
+          path: .aws/credentials
+
+  oidc-second-job-test:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - attach_workspace:
+          at: .
+      - run: aws sts get-caller-identity
 
 workflows:
   main:
     jobs:
       - oidc-test-2:
           context: empty-context
+      - oidc-second-job-test:
+          requires: 
+            - oidc-test-2
