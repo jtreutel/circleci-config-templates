@@ -3,6 +3,31 @@ version: 2.1
 orbs: 
   aws-cli: circleci/aws-cli@3.0.0
 
+commands:
+  aws-oidc-setup:
+    parameters:
+      aws-region:
+        type: string
+        default: us-east-1  #this should be okay since this will only be used for the AWS STS command that retrieves credentials
+      aws-oidc-role-arn:    #this should be the IAM role assigned to your AWS OIDC provider and audience
+        type: string
+      
+    steps:
+      - run:
+          command: | 
+            aws sts assume-role-with-web-identity \
+            --role-arn ${AWS_OIDC_ROLE_ARN} \
+            --role-session-name ${CIRCLE_USERNAME}-${CIRCLE_SHA1:0:5} \
+            --web-identity-token ${CIRCLE_OIDC_TOKEN} > /tmp/aws-creds.txt
+
+            echo export AWS_ACCESS_KEY_ID="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.AccessKeyId")" >> $BASH_ENV
+            echo export AWS_SECRET_ACCESS_KEY="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SecretAccessKey")" >> $BASH_ENV
+            echo export AWS_SESSION_TOKEN="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SessionToken")" >> $BASH_ENV
+
+            source $BASH_ENV
+            aws sts get-caller-identity
+#rm /tmp/aws-creds.txt
+
 jobs:
   oidc-test:
     docker:
@@ -24,10 +49,18 @@ jobs:
             export AWS_SESSION_TOKEN="$(cat /tmp/aws-creds.txt | jq -r ".Credentials.SessionToken")"
             
             aws sts get-caller-identity
+  oidc-test-2:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - aws-cli/install
+      - aws-oidc-setup:
+          aws-oidc-role-arn: arn:aws:iam::660990364978:role/jennings-oidc-demo
+      - run:
+          command: aws sts get-caller-identity
 
 workflows:
   main:
     jobs:
-      - oidc-test:
-          #context: node-demo
+      - oidc-test-2:
           context: empty-context
