@@ -14,4 +14,5 @@ jobs:
 workflows:
   main:
     jobs:
-      - oidc-test
+      - oidc-test:
+          context: empty-context
