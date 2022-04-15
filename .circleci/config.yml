@@ -8,11 +8,11 @@ jobs:
     docker:
       - image: cimg/base:2021.01
     steps:
-      - aws-cli/setup:
-          aws-region: AWS_REGION #should use AWS_DEFAULT_REGION by default
+      - aws-cli/install
       - run:
           command: | 
             export AWS_OIDC_ROLE_ARN="arn:aws:iam::660990364978:role/jennings-oidc-demo"
+            export AWS_REGION="ap-northeast-2"
 
             aws sts assume-role-with-web-identity \
             --role-arn ${AWS_OIDC_ROLE_ARN} \
