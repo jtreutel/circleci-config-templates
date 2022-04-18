@@ -28,12 +28,12 @@ commands:
             echo export AWS_SESSION_TOKEN="${STS_RESPONSE[2]}" >> $BASH_ENV
 
             if [ <<parameters.write-to-credentials>> ]; then \
-              cat \<< EOF > ~/.aws/credentials
+              cat \<< EOF > .aws/credentials
               [default]
               aws_access_key_id=${STS_RESPONSE[0]}
               aws_secret_access_key=${STS_RESPONSE[1]}
               aws_session_token=${STS_RESPONSE[2]}
-              EOF \
+              EOF 
             fi
 
             source $BASH_ENV
