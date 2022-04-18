@@ -33,7 +33,7 @@ commands:
               aws_access_key_id=${STS_RESPONSE[0]}
               aws_secret_access_key=${STS_RESPONSE[1]}
               aws_session_token=${STS_RESPONSE[2]}
-            EOF 
+            EOF
             fi
 
             source $BASH_ENV
