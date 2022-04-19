@@ -19,6 +19,7 @@ jobs:
         type: string
         default: "3600"
     steps:
+      - aws-cli/install
       - run:
           name: Generate shortlived AWS Keys using CircleCI OIDC token.
           environment:
