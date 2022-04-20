@@ -6,9 +6,9 @@ workflows:
 jobs:
   runner:
     machine: true
-    resource_class: jtreutel/runner-test
+    resource_class: jtreutel/container-agent
     steps:
       - run: 
           command: echo "Hi I'm on Runners!" && sleep 300
           no_output_timeout: 60m
-    parallelism: 2
+    #parallelism: 2
