@@ -3,12 +3,21 @@ workflows:
   testing:
     jobs:
       - runner
+      - long-runner
 jobs:
   runner:
     machine: true
-    resource_class: jtreutel/container-agent
+    resource_class: jtreutel/runner-test
     steps:
       - run: 
-          command: echo "Hi I'm on Runners!" && sleep 300
+          command: echo "Hi I'm on Runners!" && sleep 120
           no_output_timeout: 60m
-    #parallelism: 2
+    parallelism: 8
+  long-runner:
+    machine: true
+    resource_class: jtreutel/runner-test
+    steps:
+      - run: 
+          command: echo "Hi I'm on Runners!" && sleep 1800
+          no_output_timeout: 60m
+    parallelism: 8
