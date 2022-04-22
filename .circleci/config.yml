@@ -11,7 +11,7 @@ jobs:
     steps:
       - run: 
           command: echo "Hi I'm on Runners!" && sleep 1200
-          no_output_timeout: 60m
+          no_output_timeout: 12h
     parallelism: 8
   long-runner:
     machine: true
@@ -19,5 +19,5 @@ jobs:
     steps:
       - run: 
           command: echo "Hi I'm a long job on Runners!" && sleep 7200
-          no_output_timeout: 60m
+          no_output_timeout: 12h
     parallelism: 8
