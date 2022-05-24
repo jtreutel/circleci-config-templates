@@ -19,10 +19,10 @@ jobs:
           command: |
             # debug
             echo APPROVAL_JOB_ID=$(curl --request GET --url "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job" --header "Circle-Token: ${CIRCLE_TOKEN}" | jq -r '.items[] | select(.type == "approval") | .id')
-            echo "https://circleci.com/api/v2/workflow/${CIRCLECI_WORKFLOW_ID}/approve/${APPROVAL_JOB_ID}"
+            echo "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/approve/${APPROVAL_JOB_ID}"
             
             export APPROVAL_JOB_ID=$(curl --request GET --url "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job" --header "Circle-Token: ${CIRCLE_TOKEN}" | jq -r '.items[] | select(.type == "approval") | .id')
-            curl --request POST https://circleci.com/api/v2/workflow/${CIRCLECI_WORKFLOW_ID}/approve/${APPROVAL_JOB_ID} --header "Circle-Token: ${CIRCLE_TOKEN}"
+            curl --request POST "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/approve/${APPROVAL_JOB_ID}" --header "Circle-Token: ${CIRCLE_TOKEN}"
           when: always
   upload_results:
     machine: true
