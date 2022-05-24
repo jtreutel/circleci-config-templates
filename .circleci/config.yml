@@ -37,8 +37,6 @@ workflows:
       - build
       - manual-approval:
           type: approval
-          requires:
-            - build
       - upload_results:
           requires:
             - manual-approval
