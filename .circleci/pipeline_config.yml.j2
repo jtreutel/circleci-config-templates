@@ -1,0 +1,52 @@
+version: 2.1
+
+orbs: 
+  aws-cli: circleci/aws-cli@3.1.1
+
+jobs:
+  setup-aws-cli:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          profile-name: default
+          role-arn: "arn:aws:iam::660990364978:role/jennings-oidc-demo"
+          role-session-name: example-session
+      - run: aws sts get-caller-identity #example AWS command
+      
+  run-deployment:
+    docker:
+      - image: cimg/node:18.4.0
+    steps:
+      - checkout
+      - run: node --version #demonstrate node is installed
+      - run: 
+          command: |
+            cat \<< EOF
+            Deploying with the following params:
+            
+            App name: {{ APP_NAME }}
+            Release: {{ RELEASE }}
+            Build number: << pipeline.number >>
+            Branch: << pipeline.git.branch >>
+            Environment: {{ ENVIRONMENT }}
+            Artifact S3 bucket: ${S3_BUCKET}
+            EOF
+    
+
+
+
+workflows:
+  dev:
+    jobs:
+      - setup-aws-cli:
+          context: empty-context
+      - run-deployment:
+          context: aws-dev-deployment
+
+  staging:
+    jobs:
+      - setup-aws-cli:
+          context: empty-context
+      - run-deployment:
+          context: aws-{{ ENVIRONMENT }}-deployment
