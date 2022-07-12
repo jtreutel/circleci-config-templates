@@ -49,4 +49,4 @@ workflows:
       - setup-aws-cli:
           context: empty-context
       - run-deployment:
-          context: aws-{{ ENVIRONMENT }}-deployment
+          context: test-{{ ENVIRONMENT }}-vars
