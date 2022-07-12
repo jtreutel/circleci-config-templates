@@ -1,57 +1,40 @@
 version: 2.1
 
+setup: true       # this allows you to use CircleCI's dynamic configuration feature
+
 parameters:
   app_name: 
     type: string 
     default: test
   release:
     type: string
-    default: "1.0"
+    default: "1.0.0"
+  environment:
+    type: string
+    default: dev
 
-commands:
-  deploy:
-    #parameters:
-    steps:
-      - run:
-          command: |
-            cat \<< EOF
-            Deploying with the following params:
-            
-            App name: << pipeline.parameters.app_name >>
-            Release: << pipeline.parameters.release >>
-            Build number: << pipeline.number >>
-            Branch: << pipeline.git.branch >>
-            Environment: << pipeline.git.branch >>
-            EOF
+orbs:
+  continuation: circleci/continuation@0.3.1   # the continuation orb is required in order to use dynamic configuration
+  jinja: jtreutel/jinja@1.1.0
 
-orbs: 
-  aws-cli: circleci/aws-cli@3.1.1
 
 jobs:
-  setup-aws-cli:
-    executor: aws-cli/default
+  render-config-and-continue:  # this job is used to generate and pass the config file that will be used in the actual pipeline
+    environment:
+      APP_NAME: << pipeline.parameters.app_name >>
+      RELEASE: << pipeline.parameters.release >>
+      ENVIRONMENT: << pipeline.parameters.environment >>
+    executor: jinja/default
     steps:
       - checkout
-      - aws-cli/setup:
-          profile-name: default
-          role-arn: "arn:aws:iam::660990364978:role/jennings-oidc-demo"
-          role-session-name: example-session
-      - run: aws sts get-caller-identity #example AWS command
-      
-  run-deployment:
-    docker:
-      - image: cimg/node:18.4.0
-    steps:
-      - checkout
-      - run: node --version #demonstrate node is installed
-      - deploy
-    
+      - jinja/render:
+          outputdir: ./.circleci
+          path: ./.circleci/pipeline_config.yml.j2
+      - continuation/continue:
+          configuration_path: ./.circleci/pipeline_config.yml # use newly generated config to continue
 
-
-
+# our single workflow, that triggers the setup job defined above
 workflows:
-  main:
+  setup:
     jobs:
-      - setup-aws-cli:
-          context: empty-context
-      - run-deployment
+      - render-config-and-continue
