@@ -1,14 +1,12 @@
 version: 2.1
 
-setup: true       # this allows you to use CircleCI's dynamic configuration feature
-
 parameters:
   app_name:           # Determines which microservice will be deployed
     type: string 
-    default: test
+    default: default
   release:            # Determines which version of the microservice will be deployed
     type: string
-    default: "1.0.0"
+    default: default
   environment:        # Determines the environment in which to deploy
     type: string
     default: dev
@@ -16,30 +14,97 @@ parameters:
     type: boolean
     default: false
 
-
-orbs:
-  continuation: circleci/continuation@0.3.1   # the continuation orb is required in order to use dynamic configuration
-  jinja: jtreutel/jinja@1.1.0
-
+orbs: 
+  aws-cli: circleci/aws-cli@3.1.1
 
 jobs:
-  render-config-and-continue:  # this job is used to generate and pass the config file that will be used in the actual pipeline
-    environment:
-      APP_NAME: << pipeline.parameters.app_name >>
-      RELEASE: << pipeline.parameters.release >>
-      ENVIRONMENT: << pipeline.parameters.environment >>
-      NO_PROMOTIION: << pipeline.parameters.no_promotion >>
-    executor: jinja/default
+  setup-aws-cli:
+    executor: aws-cli/default
     steps:
       - checkout
-      - jinja/render:
-          outputdir: ./.circleci
-          path: ./.circleci/pipeline_config.yml.j2
-      - continuation/continue:
-          configuration_path: ./.circleci/pipeline_config.yml # use newly generated config to continue
+      - aws-cli/setup:
+          profile-name: default
+          role-arn: "arn:aws:iam::660990364978:role/jennings-oidc-demo"
+          role-session-name: example-session
+      - run: aws sts get-caller-identity #example AWS command
+      
+  run-deployment:
+    docker:
+      - image: cimg/node:18.4.0
+    steps:
+      - checkout
+      - run: node --version #demonstrate node is installed
+      - run: 
+          command: |
+            cat \<< EOF
+            Deploying with the following params:
+            
+            App name: << pipeline.parameters.app_name >>
+            Release: << pipeline.parameters.release >>
+            Build number: << pipeline.number >>
+            Branch: << pipeline.git.branch >>
+            Environment: << pipeline.parameters.environment >>
+            Artifact S3 bucket: ${S3_BUCKET}
+            EOF
+  promote:
+    docker:
+      - image: cimg/base:2022.06
+    steps:
+      - run:
+          name: Determine next environment and trigger pipeline
+          command: |
+            if [ << pipeline.parameters.environment >> == "dev" ]; then \
+              export NEXT_ENV="staging"; \
+            elif [ << pipeline.parameters.environment >> == "staging" ]; then \
+              export NEXT_ENV="prod"; \
+            fi
 
-# our single workflow, that triggers the setup job defined above
+            export REQUEST_BODY=$(jq --null-input \
+            --arg branch "<< pipeline.git.branch >>" \
+            --arg environment "$NEXT_ENV" \
+            --arg release "{{ RELEASE }}" \
+            --arg app_name "{{ APP_NAME }}" \
+            '{"branch":$branch,"parameters":{"environment":$environment,"release":$release,"app_name":$app_name}}')
+
+            echo curl --request POST --url https://circleci.com/api/v2/project/gh/jtreutel/${CIRCLE_PROJECT_REPONAME}/pipeline --header "Circle-Token: $CIRCLE_TOKEN" --header "content-type: application/json" --data $REQUEST_BODY
+
+
+            curl --request POST --url https://circleci.com/api/v2/project/gh/jtreutel/${CIRCLE_PROJECT_REPONAME}/pipeline --header "Circle-Token: $CIRCLE_TOKEN" --header "content-type: application/json" --data "$REQUEST_BODY"
+
 workflows:
-  setup:
+  deploy-and-promote:
+    when:
+        condition:
+          or:
+            - equal: [ dev, << pipeline.parameters.environment >> ]
+            - equal: [ staging, << pipeline.parameters.environment >> ]
     jobs:
-      - render-config-and-continue
+      - setup-aws-cli:
+          context: empty-context
+      - run-deployment:
+          context: test-<< pipeline.parameters.environment >>-vars
+          requires:
+            - setup-aws-cli
+      #- manual-approval
+      - promote:
+          context: test-<< pipeline.parameters.environment >>-vars
+          requires:
+            - run-deployment
+  deploy-only:
+    when:
+        condition:
+          or:
+            - equal: [ prod, << pipeline.parameters.environment >> ]
+            - equal: [ true, << pipeline.parameters.no_promotion >> ]
+    jobs:
+      - setup-aws-cli:
+          context: empty-context
+      - run-deployment:
+          context: test-<< pipeline.parameters.environment >>-vars
+          requires:
+            - setup-aws-cli
+      #- manual-approval
+      - promote:
+          context: test-<< pipeline.parameters.environment >>-vars
+          requires:
+            - run-deployment
