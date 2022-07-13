@@ -98,8 +98,13 @@ workflows:
       - setup-aws-cli:
           name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
           context: empty-context
+      - hold:
+          name: Manual approval required to deploy << pipeline.parameters.app_name >> to << pipeline.parameters.environment >>
+          type: approval
+          requires:
+            - << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
       - run-deployment:
           name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Run Deployment
           context: test-<< pipeline.parameters.environment >>-vars
           requires:
-            - << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
+            - Manual approval required to deploy << pipeline.parameters.app_name >> to << pipeline.parameters.environment >>
