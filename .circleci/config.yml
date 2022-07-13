@@ -72,7 +72,7 @@ jobs:
             curl --request POST --url https://circleci.com/api/v2/project/gh/jtreutel/${CIRCLE_PROJECT_REPONAME}/pipeline --header "Circle-Token: $CIRCLE_TOKEN" --header "content-type: application/json" --data "$REQUEST_BODY"
 
 workflows:
-  deploy-and-promote:
+  deploy-and-promote-:
     when:
         condition:
           or:
@@ -80,16 +80,19 @@ workflows:
             - equal: [ staging, << pipeline.parameters.environment >> ]
     jobs:
       - setup-aws-cli:
+          name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
           context: empty-context
       - run-deployment:
+          name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Run Deployment
           context: test-<< pipeline.parameters.environment >>-vars
           requires:
-            - setup-aws-cli
+            - << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
       #- manual-approval
       - promote:
+          name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Promote to Next Environment
           context: test-<< pipeline.parameters.environment >>-vars
           requires:
-            - run-deployment
+            - << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Run Deployment
   deploy-only:
     when:
         condition:
@@ -98,13 +101,10 @@ workflows:
             - equal: [ true, << pipeline.parameters.no_promotion >> ]
     jobs:
       - setup-aws-cli:
+          name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
           context: empty-context
       - run-deployment:
+          name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Run Deployment
           context: test-<< pipeline.parameters.environment >>-vars
           requires:
-            - setup-aws-cli
-      #- manual-approval
-      - promote:
-          context: test-<< pipeline.parameters.environment >>-vars
-          requires:
-            - run-deployment
+            - << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
