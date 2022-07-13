@@ -32,21 +32,44 @@ jobs:
             Environment: {{ ENVIRONMENT }}
             Artifact S3 bucket: ${S3_BUCKET}
             EOF
-    
+  promote:
+    docker:
+      - image: cimg/base
+    when:
+        condition:
+          or:
+            - equal: [ dev, {{ ENVIRONMENT }} ]
+            - equal: [ staging, {{ ENVIRONMENT }} ]
+    steps:
+      run:
+        name: Determine next environment and trigger pipeline
+        command: |
+          if [ "$TESTVAR" == "dev" ]; then \
+            export NEXT_ENV="staging"; \
+          elif [ "$TESTVAR" == "staging" ]; then \
+            export NEXT_ENV="prod"; \
+          fi
 
+          export REQUEST_BODY=$(jq --null-input \
+          --arg branch "<< pipeline.git.branch >>" \
+          --arg environment "$NEXT_ENV" \
+          --arg release "{{ RELEASE }}" \
+          --arg app_name "{{ APP_NAME }}" \
+          '{"branch":$branch,"parameters":{"environment":$environment,"release":$release,"app_name":$app_name}}')
 
+          curl --request POST --url https://circleci.com/api/v2/project/gh/jtreutel/${CIRCLE_PROJECT_REPONAME}/pipeline --header "Circle-Token: $CIRCLE_TOKEN" --header 'content-type: application/json' --data $REQUEST_BODY
 
 workflows:
-  dev:
-    jobs:
-      - setup-aws-cli:
-          context: empty-context
-      - run-deployment:
-          context: aws-dev-deployment
-
-  staging:
+  main:
     jobs:
       - setup-aws-cli:
           context: empty-context
       - run-deployment:
           context: test-{{ ENVIRONMENT }}-vars
+          requires:
+            - setup-aws-cli
+      #- manual-approval
+      - promote:
+          context: test-{{ ENVIRONMENT }}-vars
+          requires:
+            - run-deployment
