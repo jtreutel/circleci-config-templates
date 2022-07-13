@@ -72,8 +72,7 @@ workflows:
   deploy-and-promote:
     when:
       condition:
-        or:
-          - equal: [ dev, abc123 ]
+        - equal: [ dev, abc123 ]
           #- equal: [ dev, << pipeline.parameters.environment >> ]
           #- equal: [ staging, << pipeline.parameters.environment >> ]
     jobs:
@@ -94,8 +93,7 @@ workflows:
   deploy-only:
     when:
       condition:
-        or:
-          - equal: [ "dev", "abc123" ]
+        - equal: [ "dev", "abc123" ]
           #- equal: [ prod, << pipeline.parameters.environment >> ]
           #- equal: [ true, << pipeline.parameters.no_promotion >> ]
     jobs:
