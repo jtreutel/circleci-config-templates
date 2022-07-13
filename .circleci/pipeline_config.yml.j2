@@ -52,6 +52,9 @@ jobs:
             --arg app_name "{{ APP_NAME }}" \
             '{"branch":$branch,"parameters":{"environment":$environment,"release":$release,"app_name":$app_name}}')
 
+            echo curl --request POST --url https://circleci.com/api/v2/project/gh/jtreutel/${CIRCLE_PROJECT_REPONAME}/pipeline --header "Circle-Token: $CIRCLE_TOKEN" --header 'content-type: application/json' --data $REQUEST_BODY
+
+
             curl --request POST --url https://circleci.com/api/v2/project/gh/jtreutel/${CIRCLE_PROJECT_REPONAME}/pipeline --header "Circle-Token: $CIRCLE_TOKEN" --header 'content-type: application/json' --data $REQUEST_BODY
 
 workflows:
