@@ -71,10 +71,9 @@ jobs:
 workflows:
   deploy-and-promote:
     when:
-      condition:
-        or:
-          - equal: [ "dev", "notdev" ]
-          - equal: [ staging, "notstaging" ]
+      or:
+        - equal: [ "dev", "notdev" ]
+        - equal: [ staging, "notstaging" ]
     jobs:
       - setup-aws-cli:
           name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
