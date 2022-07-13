@@ -13,7 +13,7 @@ parameters:
     type: string
     default: dev
   no_promotion:       # Determines whether or not to promote to the next environment
-    type: string
+    type: boolean
     default: false
 
 
