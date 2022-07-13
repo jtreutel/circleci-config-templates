@@ -73,8 +73,9 @@ workflows:
     when:
       condition:
         or:
-          - equal: [ dev, << pipeline.parameters.environment >> ]
-          - equal: [ staging, << pipeline.parameters.environment >> ]
+          - equal: [ dev, abc123 ]
+          #- equal: [ dev, << pipeline.parameters.environment >> ]
+          #- equal: [ staging, << pipeline.parameters.environment >> ]
     jobs:
       - setup-aws-cli:
           name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
@@ -94,8 +95,9 @@ workflows:
     when:
       condition:
         or:
-          - equal: [ prod, << pipeline.parameters.environment >> ]
-          - equal: [ true, << pipeline.parameters.no_promotion >> ]
+          - equal: [ "dev", "abc123" ]
+          #- equal: [ prod, << pipeline.parameters.environment >> ]
+          #- equal: [ true, << pipeline.parameters.no_promotion >> ]
     jobs:
       - setup-aws-cli:
           name: << pipeline.parameters.app_name >> << pipeline.parameters.environment >> Setup AWS CLI
