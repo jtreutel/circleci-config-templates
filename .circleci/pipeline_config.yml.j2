@@ -39,9 +39,9 @@ jobs:
       - run:
           name: Determine next environment and trigger pipeline
           command: |
-            if [ "$TESTVAR" == "dev" ]; then \
+            if [ {{ ENVIRONMENT }} == "dev" ]; then \
               export NEXT_ENV="staging"; \
-            elif [ "$TESTVAR" == "staging" ]; then \
+            elif [ {{ ENVIRONMENT }} == "staging" ]; then \
               export NEXT_ENV="prod"; \
             fi
 
