@@ -35,11 +35,6 @@ jobs:
   promote:
     docker:
       - image: cimg/base
-    when:
-        condition:
-          or:
-            - equal: [ dev, {{ ENVIRONMENT }} ]
-            - equal: [ staging, {{ ENVIRONMENT }} ]
     steps:
       run:
         name: Determine next environment and trigger pipeline
@@ -73,3 +68,8 @@ workflows:
           context: test-{{ ENVIRONMENT }}-vars
           requires:
             - run-deployment
+          when:
+              condition:
+                or:
+                  - equal: [ dev, {{ ENVIRONMENT }} ]
+                  - equal: [ staging, {{ ENVIRONMENT }} ]
