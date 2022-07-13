@@ -3,15 +3,19 @@ version: 2.1
 setup: true       # this allows you to use CircleCI's dynamic configuration feature
 
 parameters:
-  app_name: 
+  app_name:           # Determines which microservice will be deployed
     type: string 
     default: test
-  release:
+  release:            # Determines which version of the microservice will be deployed
     type: string
     default: "1.0.0"
-  environment:
+  environment:        # Determines the environment in which to deploy
     type: string
     default: dev
+  no_promotion:       # Determines whether or not to promote to the next environment
+    type: string
+    default: false
+
 
 orbs:
   continuation: circleci/continuation@0.3.1   # the continuation orb is required in order to use dynamic configuration
@@ -24,6 +28,7 @@ jobs:
       APP_NAME: << pipeline.parameters.app_name >>
       RELEASE: << pipeline.parameters.release >>
       ENVIRONMENT: << pipeline.parameters.environment >>
+      NO_PROMOTIION: << pipeline.parameters.no_promotion >>
     executor: jinja/default
     steps:
       - checkout
