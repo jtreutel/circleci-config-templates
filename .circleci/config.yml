@@ -12,6 +12,7 @@ jobs:
             cat \<< EOF >> my_script.sh
             echo "This is the output of a script"
             EOF
+            chmod +x ./my_script.sh
       - run: 
           command: |
             echo "Executing script..."
