@@ -4,24 +4,33 @@ orbs:
   android: circleci/android@2.1.2
 
 jobs:  
-  env_var_to_file:
+  testing_job:
     executor:
       name: android/android-machine
       resource-class: xlarge
       tag: 2022.01.1
     steps:
       - run: 
+          name: Check Linux version
+          command: |
+            cat /etc/issue
+            lsb_release -a 
+      - run: 
           name: Write base64-encoded environment variable to file, then output file
           command: |
             echo $KEYSTORE | base64 -d > ./local.properties
             cat ./local.properties
       - run: 
+          name: Install pngquant
           command: |
-            cat /etc/issue || true
-            lsb_release -a || true
+            sudo apt update && sudo apt install pngquant
+      - run: 
+          name: Verify pngquant is installed
+          command: pngquant --version
+
 workflows:
   main:
     jobs:
-      - env_var_to_file:
+      - testing_job:
           context: 
             - my-new-context
