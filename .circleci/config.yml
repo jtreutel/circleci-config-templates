@@ -1,23 +1,27 @@
 version: 2.1
 
+orbs:
+  android: circleci/android@2.1.2
 
 jobs:  
-  run_a_script:
-    docker:
-      - image: cimg/base:2022.07
+  env_var_to_file:
+    executor:
+      name: android/android-machine
+      resource-class: xlarge
+      tag: 2022.01.1
     steps:
       - run: 
+          name: Write base64-encoded environment variable to file, then output file
           command: |
-            echo "Generating script..."
-            cat \<< EOF >> my_script.sh
-            echo "This is the output of a script"
-            EOF
-            chmod +x ./my_script.sh
+            echo $KEYSTORE | base64 -d > ./local.properties
+            cat ./local.properties
       - run: 
           command: |
-            echo "Executing script..."
-            ./my_script.sh
+            cat /etc/issue || true
+            lsb_release -a || true
 workflows:
   main:
     jobs:
-      - run_a_script
+      - env_var_to_file:
+          context: 
+            - my-new-context
