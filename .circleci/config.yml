@@ -16,6 +16,11 @@ jobs:
             cat /etc/issue
             lsb_release -a 
       - run: 
+          name: Decode base64-encoded environment variable and store it in another environment variable
+          command: |
+            export KEYSTORE_DECODED=$(echo $KEYSTORE | base64 -d)
+            echo $KEYSTORE_DECODED
+      - run: 
           name: Write base64-encoded environment variable to file, then output file
           command: |
             echo $KEYSTORE | base64 -d > ./local.properties
