@@ -1,0 +1,10 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: ubuntu:rolling
+    steps:
+      - run: w
+      - run: uname -a
+      - run: echo Hello from CircleCI!
