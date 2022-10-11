@@ -1,41 +1,35 @@
 version: 2.1
 
-orbs:
-  android: circleci/android@2.1.2
-
 jobs:  
   testing_job:
-    executor:
-      name: android/android-machine
-      resource-class: xlarge
-      tag: 2022.01.1
+    docker:
+      - image: cimg/base
     steps:
       - run: 
-          name: Check Linux version
-          command: |
-            cat /etc/issue
-            lsb_release -a 
-      - run: 
-          name: Decode base64-encoded environment variable and store it in another environment variable
-          command: |
-            export KEYSTORE_DECODED=$(echo $KEYSTORE | base64 -d)
-            echo $KEYSTORE_DECODED
-      - run: 
-          name: Write base64-encoded environment variable to file, then output file
-          command: |
-            echo $KEYSTORE | base64 -d > ./local.properties
-            cat ./local.properties
-      - run: 
-          name: Install pngquant
-          command: |
-            sudo apt update && sudo apt install pngquant
-      - run: 
-          name: Verify pngquant is installed
-          command: pngquant --version
+          name: Get list of all files
+          command: ls -al
+      - persist_to_workspace:
+          root: .
+          paths: 
+              - .
+  testing_job_2:
+    docker:
+      - image: cimg/base
+    steps:
+      - run:
+          name: Create directory "foobar"
+          command: mkdir testing
+      - attach_workspace:
+          at: foobar/
+      - run:
+          name: List files in directory "foobar"
+          command: ls -al foobar
+
 
 workflows:
   main:
     jobs:
-      - testing_job:
-          context: 
-            - my-new-context
+      - testing_job
+      - testing_job_2:
+          requires:
+              - testing_job
