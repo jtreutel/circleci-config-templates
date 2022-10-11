@@ -8,7 +8,7 @@ jobs:
     steps:
       - run: 
           name: Get list of all files
-          command: ls -al
+          command: find $PWD
       - persist_to_workspace:
           root: .
           paths: 
@@ -25,7 +25,7 @@ jobs:
           at: foobar/
       - run:
           name: List files in directory "foobar"
-          command: ls -al foobar
+          command: cd foobar && find $PWD
 
 
 workflows:
