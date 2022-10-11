@@ -1,0 +1,37 @@
+version: 2.1
+
+jobs:  
+  save_files:
+    docker:
+      - image: cimg/base:2022.10
+    working_directory: "~"
+    steps:
+      - run: 
+          name: Get list of all files
+          command: find $PWD
+      - persist_to_workspace:
+          root: .
+          paths: 
+              - .
+  restore_files:
+    docker:
+      - image: cimg/base:2022.10
+    working_directory: "~"
+    steps:
+      - run:
+          name: Create directory "foobar"
+          command: mkdir testing
+      - attach_workspace:
+          at: foobar/
+      - run:
+          name: List files in directory "foobar"
+          command: cd foobar && find $PWD
+
+
+workflows:
+  main:
+    jobs:
+      - save_files
+      - restore_files:
+          requires:
+              - save_files
