@@ -1,9 +1,9 @@
 version: 2.1
 
 jobs:  
-  testing_job:
+  save_files:
     docker:
-      - image: cimg/base
+      - image: cimg/base:2022.10
     steps:
       - run: 
           name: Get list of all files
@@ -12,9 +12,9 @@ jobs:
           root: .
           paths: 
               - .
-  testing_job_2:
+  restore_files:
     docker:
-      - image: cimg/base
+      - image: cimg/base:2022.10
     steps:
       - run:
           name: Create directory "foobar"
@@ -29,7 +29,7 @@ jobs:
 workflows:
   main:
     jobs:
-      - testing_job
-      - testing_job_2:
+      - save_files
+      - restore_files:
           requires:
               - testing_job
