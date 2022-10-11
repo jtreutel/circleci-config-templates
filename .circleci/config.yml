@@ -4,6 +4,7 @@ jobs:
   save_files:
     docker:
       - image: cimg/base:2022.10
+    working_directory: "~"
     steps:
       - run: 
           name: Get list of all files
@@ -15,6 +16,7 @@ jobs:
   restore_files:
     docker:
       - image: cimg/base:2022.10
+    working_directory: "~"
     steps:
       - run:
           name: Create directory "foobar"
