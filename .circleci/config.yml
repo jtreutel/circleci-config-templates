@@ -17,6 +17,7 @@ jobs:
     docker:
       - image: 'circleci/node:latest'
     steps:
+      - checkout
       - run: export CUSTOM_BRANCH="pipeline-params-cd"
       - swissknife/trigger-pipeline:
           custom-parameters: '{"app_name": <<parameters.app_name>>}'
