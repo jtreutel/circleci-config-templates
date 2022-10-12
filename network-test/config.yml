@@ -1,0 +1,18 @@
+version: 2.1
+
+jobs:  
+  reachability_check:
+    circleci_ip_ranges: true
+    docker:
+      - image: cimg/node:lts
+    steps:
+      - run: 
+          name: Print IP address and try to reach Google.com HTTPS port
+          command: |
+            curl ifconfig.me && echo
+            nc -zv 172.217.31.142 443 
+
+workflows:
+  main:
+    jobs:
+      - reachability_check
