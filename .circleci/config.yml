@@ -1,18 +1,33 @@
-version: 2.1
-
-jobs:  
-  reachability_check:
-    circleci_ip_ranges: true
+version: '2.1'
+orbs:
+  swissknife: roopakv/swissknife@0.69
+jobs:
+  obtain-value:
     docker:
-      - image: cimg/node:lts
+      - image: 'circleci/node:latest'
     steps:
-      - run: 
-          name: Print IP address and try to reach Google.com HTTPS port
-          command: |
-            curl ifconfig.me && echo
-            nc -zv 172.217.31.142 443 
+      - run:
+          command: echo "export APP_NAME=foobar" >> $BASH_ENV
+
+  trigger-workflow:
+    parameters:
+      app_name:
+        type: env_var_name
+        default: APP_NAME
+    docker:
+      - image: 'circleci/node:latest'
+    steps:
+      - run: export CUSTOM_BRANCH="pipeline-params-cd"
+      - swissknife/trigger-pipeline:
+          custom-parameters: '{"app_name": <<parameters.app_name>>}'
+          branch: CUSTOM_BRANCH
+          #repo: (using default)
+          #user: (using default)
 
 workflows:
   main:
     jobs:
-      - reachability_check
+      - obtain-value
+      - trigger-workflow:
+          requires:
+            - obtain-value
