@@ -1,72 +1,51 @@
 version: 2.1
 
-orbs: 
-  aws-cli: circleci/aws-cli@3.0.0
-
-
-
+parameters:
+  redeploy:
+    type: string
+    default: false
 
 jobs:
-  oidc-test:
+  build:
     docker:
-      - image: cimg/base:2021.01
-    parameters:
-      role-arn:
-        type: string
-      role-session-name:
-        type: string
-      session-duration:
-        type: string
-        default: "3600"
+      - image: cimg/base:2021.10
     steps:
-      - aws-cli/install
-      - run:
-          name: Generate shortlived AWS Keys using CircleCI OIDC token.
-          environment:
-            PARAM_AWS_CLI_ROLE_ARN: <<parameters.role-arn>>
-            PARAM_ROLE_SESSION_NAME: <<parameters.role-session-name>>
-            PARAM_SESSION_DURATION: <<parameters.session-duration>>
+      - run: 
           command: |
-            export PARAM_ROLE_SESSION_NAME=$(eval echo "${PARAM_ROLE_SESSION_NAME}")
-
-            echo "get keys"
-            read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
-            "$(aws sts assume-role-with-web-identity \
-            --role-arn "${PARAM_AWS_CLI_ROLE_ARN}" \
-            --role-session-name "${PARAM_ROLE_SESSION_NAME}" \
-            --web-identity-token "${CIRCLE_OIDC_TOKEN}" \
-            --duration-seconds "${PARAM_SESSION_DURATION}" \
-            --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-            --output text)"
-
-            echo "get caller identity"
-            aws sts get-caller-identity
-
-            echo "export to bash env"
-            echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> "$BASH_ENV"
-            echo "export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> "$BASH_ENV"
-            # echo "export AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> "$BASH_ENV"
-            export AWS_SESSION_TOKEN
-
-
-
-
-
-  oidc-second-job-test:
+            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+  test:
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2021.10
     steps:
-      - attach_workspace:
-          at: .
-      - run: aws sts get-caller-identity
-
+      - run: 
+          command: |
+            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+  deploy:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: |
+            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
 workflows:
   main:
+    when:
+      equal: [ "", << pipeline.parameters.target-job >> ]
     jobs:
-      - oidc-test:
-          role-arn: "arn:aws:iam::660990364978:role/jennings-oidc-demo"
-          role-session-name: foobar
-          context: empty-context
-      - oidc-second-job-test:
-          requires: 
-            - oidc-test
+      - build
+      - test:
+          requires:
+            - build
+      - hold-for-approval:
+          type: approval
+          requires:
+            - test
+      - deploy:
+          requires:
+            - hold-for-approval
+
+  deploy-only:
+    when:
+      equal: [ true, << pipeline.parameters.redeploy >> ]
+    jobs:
+      - deploy
