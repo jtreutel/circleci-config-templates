@@ -7,14 +7,14 @@ jobs:
     steps:
       - run: 
           command: |
-            echo "Running the build job for ver << pipeline.git.tag >>!"
+            echo "Running the build job"
   test:
     docker:
       - image: cimg/base:2021.10
     steps:
       - run: 
           command: |
-            echo "Running the test job for ver << pipeline.git.tag >>!"
+            echo "Running the test job"
   deploy:
     docker:
       - image: cimg/base:2021.10
@@ -26,22 +26,31 @@ workflows:
   main:
     jobs:
       - build:
-          name: Building application ver << pipeline.git.tag >>
+          name: Building application
       - test:
-          name: Testing application ver << pipeline.git.tag >>
+          name: Testing application
           requires:
-            - Building application ver << pipeline.git.tag >>
+            - Building application
       - hold-for-approval:
           name: Approval required to deploy application ver << pipeline.git.tag >>
           type: approval
           requires:
-            - Testing application ver << pipeline.git.tag >>
+            - Testing application
+          filters:
+            branches:
+              only: /release\/.*/
       - deploy:
           name: Deploying application ver << pipeline.git.tag >>
           requires:
             - Approval required to deploy application ver << pipeline.git.tag >>
+          filters:
+            branches:
+              only: /release\/.*/
 
   redeploy:
+    when:
+      value: << pipeline.git.branch >>
+      pattern: "^release/.+$"
     jobs:
       - approve-to-redeploy:
           name: Approve this job to redeploy ver << pipeline.git.tag >>
@@ -50,3 +59,4 @@ workflows:
           name: Redeploying application ver << pipeline.git.tag >>
           requires:
             - Approve this job to redeploy ver << pipeline.git.tag >>
+            
