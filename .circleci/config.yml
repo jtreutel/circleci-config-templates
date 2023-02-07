@@ -48,14 +48,14 @@ workflows:
               only: /release\/.*/
 
   redeploy:
-    when:
-      matches:
-        value: << pipeline.git.branch >>
-        pattern: "^release/.+$"
     jobs:
       - approve-to-redeploy:
           name: Approve this job to redeploy ver << pipeline.git.tag >>
           type: approval
+          when:
+            matches:
+              value: << pipeline.git.branch >>
+              pattern: "^release/.+$"
       - deploy:
           name: Redeploying application ver << pipeline.git.tag >>
           requires:
