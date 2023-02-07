@@ -49,8 +49,9 @@ workflows:
 
   redeploy:
     when:
-      value: << pipeline.git.branch >>
-      pattern: "^release/.+$"
+      matches:
+        value: << pipeline.git.branch >>
+        pattern: "^release/.+$"
     jobs:
       - approve-to-redeploy:
           name: Approve this job to redeploy ver << pipeline.git.tag >>
