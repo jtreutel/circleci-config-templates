@@ -1,5 +1,10 @@
 version: 2.1
 
+tag_filter: &only_on_tagged
+  filters:
+    tags:
+      only: /^v.*/
+
 jobs:
   build:
     docker:
@@ -37,27 +42,26 @@ workflows:
           requires:
             - Testing application
           filters:
-            branches:
-              only: /release\/.*/
+            tags:
+              only: /^v.*/
       - deploy:
           name: Deploying application ver << pipeline.git.tag >>
           requires:
             - Approval required to deploy application ver << pipeline.git.tag >>
-          filters:
-            branches:
-              only: /release\/.*/
+          <<: *only_on_tagged
 
   redeploy:
+    when:
+      matches:
+        value: << pipeline.git.branch >>
+        pattern: "^release/.+$"
     jobs:
       - approve-to-redeploy:
           name: Approve this job to redeploy ver << pipeline.git.tag >>
           type: approval
-          when:
-            matches:
-              value: << pipeline.git.branch >>
-              pattern: "^release/.+$"
+          <<: *only_on_tagged
       - deploy:
           name: Redeploying application ver << pipeline.git.tag >>
           requires:
             - Approve this job to redeploy ver << pipeline.git.tag >>
-            
+          <<: *only_on_tagged
