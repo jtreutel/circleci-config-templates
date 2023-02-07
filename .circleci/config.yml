@@ -2,7 +2,7 @@ version: 2.1
 
 parameters:
   redeploy:
-    type: string
+    type: boolean
     default: false
 
 jobs:
@@ -29,8 +29,6 @@ jobs:
             echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
 workflows:
   main:
-    when:
-      equal: [ "", << pipeline.parameters.target-job >> ]
     jobs:
       - build
       - test:
