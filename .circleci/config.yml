@@ -4,6 +4,8 @@ tag_filter: &only_on_tagged
   filters:
     tags:
       only: /^v.*/
+    branches:
+      ignore: /.*/
 
 jobs:
   build:
@@ -41,9 +43,7 @@ workflows:
           type: approval
           requires:
             - Testing application
-          filters:
-            tags:
-              only: /^v.*/
+          <<: *only_on_tagged
       - deploy:
           name: Deploying application ver << pipeline.git.tag >>
           requires:
