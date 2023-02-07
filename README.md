@@ -15,3 +15,5 @@ A repository of example CircleCI configs.
 **notify-a-service** - Sending a notification to a service upon job success/failure.
 
 **run-a-single-job** - Use workflows and the CircleCI API to run a single job in the main workflow.
+
+README UPDATE
