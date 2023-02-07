@@ -29,6 +29,8 @@ jobs:
             echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
 workflows:
   main:
+    when:
+      equal: [ false, << pipeline.parameters.redeploy >> ]
     jobs:
       - build
       - test:
