@@ -1,6 +1,11 @@
 version: 2.1
 
-tag_filter: &only_on_tagged
+run_on_all: &run_on_all
+  filters:
+    tags:
+      only: /^v.*/
+
+run_on_tagged: &run_on_tagged
   filters:
     tags:
       only: /^v.*/
@@ -34,34 +39,32 @@ workflows:
     jobs:
       - build:
           name: Building application
+          <<: *run_on_all
       - test:
           name: Testing application
           requires:
             - Building application
+          <<: *run_on_all
       - hold-for-approval:
           name: Approval required to deploy application ver << pipeline.git.tag >>
           type: approval
           requires:
             - Testing application
-          <<: *only_on_tagged
+          <<: *run_on_tagged
       - deploy:
           name: Deploying application ver << pipeline.git.tag >>
           requires:
             - Approval required to deploy application ver << pipeline.git.tag >>
-          <<: *only_on_tagged
+          <<: *run_on_tagged
 
   redeploy:
-    when:
-      matches:
-        value: << pipeline.git.branch >>
-        pattern: "^release/.+$"
     jobs:
       - approve-to-redeploy:
           name: Approve this job to redeploy ver << pipeline.git.tag >>
           type: approval
-          <<: *only_on_tagged
+          <<: *run_on_tagged
       - deploy:
           name: Redeploying application ver << pipeline.git.tag >>
           requires:
             - Approve this job to redeploy ver << pipeline.git.tag >>
-          <<: *only_on_tagged
+          <<: *run_on_tagged
