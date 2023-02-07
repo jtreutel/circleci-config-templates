@@ -1,0 +1,51 @@
+version: 2.1
+
+parameters:
+  redeploy:
+    type: boolean
+    default: false
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: |
+            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+  test:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: |
+            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+  deploy:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: 
+          command: |
+            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+workflows:
+  main:
+    when:
+      equal: [ false, << pipeline.parameters.redeploy >> ]
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - hold-for-approval:
+          type: approval
+          requires:
+            - test
+      - deploy:
+          requires:
+            - hold-for-approval
+
+  deploy-only:
+    when:
+      equal: [ true, << pipeline.parameters.redeploy >> ]
+    jobs:
+      - deploy
