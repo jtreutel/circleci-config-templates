@@ -1,10 +1,5 @@
 version: 2.1
 
-parameters:
-  redeploy:
-    type: boolean
-    default: false
-
 jobs:
   build:
     docker:
@@ -12,40 +7,46 @@ jobs:
     steps:
       - run: 
           command: |
-            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+            echo "Running the build job for ver << pipeline.git.tag >>!"
   test:
     docker:
       - image: cimg/base:2021.10
     steps:
       - run: 
           command: |
-            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+            echo "Running the test job for ver << pipeline.git.tag >>!"
   deploy:
     docker:
       - image: cimg/base:2021.10
     steps:
       - run: 
           command: |
-            echo "Running the test job! Trigger source is << pipeline.trigger_source >>!"
+            echo "Running the deploy job for ver << pipeline.git.tag >>!"
 workflows:
   main:
-    when:
-      equal: [ false, << pipeline.parameters.redeploy >> ]
     jobs:
-      - build
+      - build:
+          name: Building application ver << pipeline.git.tag >>
       - test:
+          name: Testing application ver << pipeline.git.tag >>
           requires:
-            - build
+            - Building application ver << pipeline.git.tag >>
       - hold-for-approval:
+          name: Approval required to deploy application ver << pipeline.git.tag >>
           type: approval
           requires:
-            - test
+            - Testing application ver << pipeline.git.tag >>
       - deploy:
+          name: Deploying application ver << pipeline.git.tag >>
           requires:
-            - hold-for-approval
+            - Approval required to deploy application ver << pipeline.git.tag >>
 
-  deploy-only:
-    when:
-      equal: [ true, << pipeline.parameters.redeploy >> ]
+  redeploy:
     jobs:
-      - deploy
+      - approve-to-redeploy:
+          name: Approve this job to redeploy ver << pipeline.git.tag >>
+          type: approval
+      - deploy:
+          name: Redeploying application ver << pipeline.git.tag >>
+          requires:
+            - Approve this job to redeploy ver << pipeline.git.tag >>
