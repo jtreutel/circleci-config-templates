@@ -35,4 +35,4 @@
       jobs:
         - my-job:
             # You must use context for jobs require OIDC
-            context: my-context
+            context: empty-context
