@@ -8,6 +8,11 @@
         - image: cimg/base:2023.02
       steps:
         - checkout
+        - run:
+            name: fdd
+            command: |
+              echo $VAULT_CACERT_B64 > vault_ca.crt
+              export
         # Install Vault
         - vault/install
         # Authenticate using OIDC and obtain token
