@@ -1,0 +1,57 @@
+version: 2.1
+
+test: &test
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run:  echo "Running tests using var ENV_VAR from context, value is ${ENV_VAR}"
+
+
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run:  echo Building the application...
+  test-demo:
+    <<: *test
+  test-dev:
+    <<: *test
+  test-staging:
+    <<: *test
+  test-prod:
+    <<: *test
+
+workflows:
+  main:
+    jobs:
+      - build
+      - test-demo:
+          context: test-demo-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: /demo\/.*/
+      - test-dev:
+          context: test-dev-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: /dev\/.*/
+      - test-staging:
+          context: test-staging-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: /staging\/.*/
+      - test-prod:
+          context: test-prod-vars
+          requires:
+            - build
+          filters:
+            branches:
+              only: master

@@ -33,7 +33,7 @@ jobs:
     steps:
       - run: 
           command: |
-            echo "Running the deploy job for ver << pipeline.git.tag >>!"
+            echo "Running the deploy job for << pipeline.git.tag >>!"
 workflows:
   main:
     jobs:
@@ -46,25 +46,25 @@ workflows:
             - Building application
           <<: *run_on_all
       - hold-for-approval:
-          name: Approval required to deploy application ver << pipeline.git.tag >>
+          name: Approval required to deploy application << pipeline.git.tag >>
           type: approval
           requires:
             - Testing application
           <<: *run_on_tagged
       - deploy:
-          name: Deploying application ver << pipeline.git.tag >>
+          name: Deploying application << pipeline.git.tag >>
           requires:
-            - Approval required to deploy application ver << pipeline.git.tag >>
+            - Approval required to deploy application << pipeline.git.tag >>
           <<: *run_on_tagged
 
   redeploy:
     jobs:
       - approve-to-redeploy:
-          name: Approve this job to redeploy ver << pipeline.git.tag >>
+          name: Approve this job to redeploy << pipeline.git.tag >>
           type: approval
           <<: *run_on_tagged
       - deploy:
-          name: Redeploying application ver << pipeline.git.tag >>
+          name: Redeploying application << pipeline.git.tag >>
           requires:
-            - Approve this job to redeploy ver << pipeline.git.tag >>
+            - Approve this job to redeploy << pipeline.git.tag >>
           <<: *run_on_tagged
