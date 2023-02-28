@@ -12,7 +12,7 @@
             name: fdd
             command: |
               echo $VAULT_CACERT_B64 > vault_ca.crt
-              echo "export VAULT_CACERT="./vault_ca.crt" >> $BASH_ENV
+              echo "export VAULT_CACERT=./vault_ca.crt" >> $BASH_ENV
         # Install Vault
         - vault/install
         # Authenticate using OIDC and obtain token
