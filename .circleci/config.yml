@@ -25,7 +25,7 @@
             command: |
               # export secret using $BASH_ENV
               # so it can be referenced by subsequent steps within the job
-              FOO=$(vault kv get -field=password secret/data/circleci-demo/demo-secrets)
+              FOO=$(vault kv get -field=password secret/circleci-demo/demo-secrets)
               echo $FOO
               echo "export SECRET_FOO=${FOO}" >> $BASH_ENV
         # Revoke Vault token after finishing all steps
