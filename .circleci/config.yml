@@ -1,38 +1,67 @@
-  version: 2.1
-  orbs:
-    vault: smaeda-ks/orb-hashicorp-vault-cli@0.1.6
+version: 2.1
 
-  jobs:
-    my-job:
-      docker:
-        - image: cimg/base:2023.02
-      steps:
-        - checkout
-        - run:
-            name: fdd
-            command: |
-              echo $VAULT_CACERT_B64 | base64 -d > vault_ca.crt
-              echo "export VAULT_CACERT=./vault_ca.crt" >> $BASH_ENV
-        # Install Vault
-        - vault/install
-        # Authenticate using OIDC and obtain token
-        # This will automatically set VAULT_TOKEN env variable
-        - vault/auth-oidc:
-            vault-address: "https://34.85.17.240:8200"
-            vault-role: "circleci-demo"
-        - run:
-            name: Get secret
-            command: |
-              # export secret using $BASH_ENV
-              # so it can be referenced by subsequent steps within the job
-              FOO=$(vault kv get -field=password secret/circleci-demo/demo-secrets)
-              echo $FOO
-              echo "export SECRET_FOO=${FOO}" >> $BASH_ENV
-        # Revoke Vault token after finishing all steps
-        - vault/revoke-self
-  workflows:
-    use-my-orb:
-      jobs:
-        - my-job:
-            # You must use context for jobs require OIDC
-            context: empty-context
+commands:
+  validate-approval:
+    description: "Validate whether deployment was properly approved."
+    steps:
+      - run: |
+          WORKFLOW_JOBS=$(curl -H "Circle-Token: $CIRCLECI_API_KEY" "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job")
+          CURRENT_JOB_DEPENDENCIES=$(echo "$WORKFLOW_JOBS" | jq -cr ".items[] | select(.id == \"$CIRCLE_WORKFLOW_JOB_ID\") | .dependencies[]")
+          APPROVAL_JOBS=$(echo "$WORKFLOW_JOBS" | jq -cr '.items[] | select(.type == "approval")')
+
+          for JOB in $APPROVAL_JOBS
+          do
+            JOB_ID=$(echo "$JOB" | jq -r .id)
+            for DEPENDENCY_ID in $CURRENT_JOB_DEPENDENCIES
+            do
+              if [ "$DEPENDENCY_ID" = "$JOB_ID" ]; then
+                APPROVED_BY=$(echo "$JOB" | jq -r .approved_by)
+              fi
+            done
+          done
+
+          if [ "$APPROVED_BY" = "" ]; then
+            echo "Could not find linked approval job. Make sure you run this step in a job that depends on an approval job."
+            exit 1
+          fi
+
+          APPROVER=$(curl -H "Circle-Token: $CIRCLECI_API_KEY" "https://circleci.com/api/v2/user/${APPROVED_BY}")
+          APPROVER_NAME=$(echo "$APPROVER" | jq -r '"\(.name) (\(.login))"')
+          echo "Approver: $APPROVER_NAME"
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/base:2023.07
+    steps:
+      - run:
+          name: Run build and tests
+          command: echo "Running build and tests!"
+  verify:
+    docker:
+      - image: cimg/base:2023.07
+    steps:
+      - validate-approval
+  deploy:
+    docker:
+      - image: cimg/base:2023.07
+    steps:
+      - run:
+          name: Run tests
+          command: echo "Running deployment!"
+
+
+workflows:
+  use-my-orb:
+    jobs:
+      - build-and-test
+      - wait-for-approval:
+          type: approval
+          requires:
+            - build-and-test
+      - verify:
+          requires:
+            - wait-for-approval
+      - deploy:
+          requires:
+            - verify
